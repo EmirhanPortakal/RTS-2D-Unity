@@ -22,10 +22,13 @@ public class BuildingSelector : MonoBehaviour
                 if (building != null)
                 {
                     var model = building.GetModel();
-
                     if (model != null && UIManager.Instance != null)
                     {
                         UIManager.Instance.ShowBuildingInfo(model.Name, model.Health);
+
+                        // Sadece barracks ise üretim panelini aç
+                        bool isBarracks = model.Type == BuildingType.Barracks;
+                        UIManager.Instance.ShowProductionPanel(isBarracks);
                     }
                 }
                 else

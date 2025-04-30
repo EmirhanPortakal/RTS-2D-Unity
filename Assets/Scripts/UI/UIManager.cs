@@ -10,6 +10,8 @@ public class UIManager : MonoBehaviour
     [SerializeField] private TMP_Text buildingNameText;
     [SerializeField] private TMP_Text buildingHPText;
 
+    [SerializeField] private GameObject productionPanel;
+
     private void Awake()
     {
         if (Instance == null)
@@ -29,4 +31,9 @@ public class UIManager : MonoBehaviour
         buildingNameText.text = "";
         buildingHPText.text = "";
     }
+
+    public void ShowProductionPanel(bool show)
+{
+    productionPanel.SetActive(show);
+}
 }

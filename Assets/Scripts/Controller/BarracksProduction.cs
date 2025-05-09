@@ -13,7 +13,7 @@ public class BarracksProduction : MonoBehaviour
     [Tooltip("Hangi asker tipi üretilecek (1,2 veya 3)")]
     [SerializeField] private int soldierType = 1;
 
-    [Tooltip("Barracks prefab’ı altına ekleyeceğin 'SpawnPoint' adlı child Transform")]
+    [Tooltip("Barracks prefab’ı altına ekleyeceğim 'SpawnPoint' adlı child Transform")]
     [SerializeField] private Transform spawnPoint;
 
     private Coroutine produceRoutine;
@@ -24,7 +24,7 @@ public class BarracksProduction : MonoBehaviour
             spawnPoint = transform.Find("SpawnPoint");
 
         if (spawnPoint == null)
-            Debug.LogWarning("BarracksProduction: 'SpawnPoint' child bulunamadı, pozisyon kullanılacak.");
+            Debug.LogWarning("BarracksProduction: 'SpawnPoint' child bulunamadı");
 
         if (SoldierSpawner.Instance == null)
             Debug.LogError("BarracksProduction: SoldierSpawner sahnede yok!");
@@ -66,9 +66,7 @@ public class BarracksProduction : MonoBehaviour
         SoldierSpawner.Instance.SpawnSoldier(data, pos);
     }
 
-    /// <summary>
-    /// SoldierTypeData + cooldown destekli spawn (buton referansı UI'dan gelir)
-    /// </summary>
+
     public void ProduceSoldierWithCooldown(SoldierTypeData data, UnityEngine.UI.Button button)
     {
         if (!gameObject.activeInHierarchy || data == null) return;

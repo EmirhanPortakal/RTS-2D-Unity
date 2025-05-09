@@ -10,15 +10,8 @@ public class Building : MonoBehaviour
     public int          defaultHP    = 100;
     public BuildingType buildingType = BuildingType.Barracks;
 
-    // ─── YENİ EKLEMELER ───
-    /// <summary>
-    /// Hangi ScriptableObject'ten yaratıldı: BarracksType, PowerPlantType vb.
-    /// </summary>
     public BuildingTypeData TypeData { get; private set; }
 
-    /// <summary>
-    /// Placement sırasında, footprint bilgisini kaydeden metot zaten burada.
-    /// </summary>
     private GridManager _gridManager;
     private Vector2Int  _origin;
     private Vector2Int  _size;
@@ -30,27 +23,16 @@ public class Building : MonoBehaviour
         _size        = size;
     }
 
-    /// <summary>
-    /// Hangi data asset’ten instantiate edildiğini kaydetmek için bu metodu çağırın.
-    /// </summary>
     public void SetData(BuildingTypeData data)
     {
         TypeData = data;
     }
-    // ────────────────────────
 
-    /// <summary>
-    /// Dışarıdan oluşturulan modeli alır.
-    /// </summary>
     public void Initialize(BuildingModel m)
     {
         model = m;
     }
 
-    /// <summary>
-    /// Eğer Initialize() çağrıldıysa o modeli döner;
-    /// çağrılmadıysa default değerler + sprite ile yeni bir model yaratır.
-    /// </summary>
     public BuildingModel GetModel()
     {
         if (model != null)

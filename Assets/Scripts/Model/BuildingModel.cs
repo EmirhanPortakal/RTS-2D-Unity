@@ -1,13 +1,10 @@
 using UnityEngine;
 
-// Eğer henüz yoksa, BuildingTypeData sınıfınızın bulunduğu namespace'i ekleyin:
-// using YourGame.Data;
 
 public enum BuildingType
 {
     Barracks,
     PowerPlant,
-    // İleride ekleyeceğiniz diğer tipler...
 }
 
 public class BuildingModel

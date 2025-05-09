@@ -10,6 +10,7 @@ public class RuntimeGridRenderer : MonoBehaviour
     public float    cellSize      = 1f;
     public Color    lineColor     = Color.white;
     public Material lineMaterial;    // Unlit/Color tipi bir material atayın
+    public bool     drawGrid      = true; // ✅ Inspector’dan aç/kapat
 
     private int cols, rows;
     private Vector3 origin;
@@ -18,13 +19,13 @@ public class RuntimeGridRenderer : MonoBehaviour
     {
         cols = Mathf.CeilToInt(gridWorldSize.x / cellSize);
         rows = Mathf.CeilToInt(gridWorldSize.y / cellSize);
-        // Eğer kendini (GridManager) ortalamak istersen:
         origin = new Vector3(-gridWorldSize.x, -gridWorldSize.y, 0) * 0.5f;
     }
 
     void OnPostRender()
     {
-        if (lineMaterial == null) return;
+        if (!drawGrid || lineMaterial == null) return;
+
         lineMaterial.SetPass(0);
         GL.Begin(GL.LINES);
         GL.Color(lineColor);
@@ -50,4 +51,3 @@ public class RuntimeGridRenderer : MonoBehaviour
         GL.End();
     }
 }
-

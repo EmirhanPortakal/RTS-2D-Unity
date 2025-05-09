@@ -8,19 +8,19 @@ public class BuildingHoverer : MonoBehaviour
 
     void Update()
     {
-        // UI üzerindeysek hiçbir işlem yapma
+        // UI üzerindeysek işlem yapma
         if (EventSystem.current.IsPointerOverGameObject())
             return;
 
-        // Fare altındaki binayı tespit et
+        // Mouse altındaki binayı bul
         Vector3 worldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         worldPos.z = 0f;
         Collider2D col = Physics2D.OverlapPoint(worldPos);
-        hoveredBuilding = col != null 
-            ? col.GetComponentInParent<Building>() 
+        hoveredBuilding = col != null
+            ? col.GetComponentInParent<Building>()
             : null;
 
-        // Sol tıkla seçim veya deselection yap
+        // Sol tıkla bina seçimi
         if (Input.GetMouseButtonDown(0))
         {
             if (hoveredBuilding != null)
@@ -32,38 +32,26 @@ public class BuildingHoverer : MonoBehaviour
                 selectedBuilding = null;
                 UIManager.Instance.HideBuildingInfo();
                 UIManager.Instance.ShowProductionPanel(false);
+                UIManager.Instance.SetCurrentProductionSource(null);
             }
         }
 
-        // Eğer bir bina seçiliyse
-        if (selectedBuilding != null)
+        // Paneli güncelle (öncelik seçilende)
+        Building display = selectedBuilding != null ? selectedBuilding : hoveredBuilding;
+
+        if (display != null)
         {
-            var model = selectedBuilding.GetModel();
-            UIManager.Instance.ShowBuildingInfo(
-                model.Name,
-                model.Icon,
-                model.Health
-            );
-            bool canProd = selectedBuilding.TypeData != null
-                           && selectedBuilding.TypeData.canProduceUnits;
+            var model = display.GetModel();
+            UIManager.Instance.ShowBuildingInfo(model.Name, model.Icon, model.Health);
+
+            bool canProd = display.TypeData != null && display.TypeData.canProduceUnits;
             UIManager.Instance.ShowProductionPanel(canProd);
-        }
-        // Seçili yoksa ama hover’daysak geçici göster
-        else if (hoveredBuilding != null)
-        {
-            var model = hoveredBuilding.GetModel();
-            UIManager.Instance.ShowBuildingInfo(
-                model.Name,
-                model.Icon,
-                model.Health
-            );
-            bool canProd = hoveredBuilding.TypeData != null
-                           && hoveredBuilding.TypeData.canProduceUnits;
-            UIManager.Instance.ShowProductionPanel(canProd);
+
+            if (selectedBuilding == display && canProd)
+                UIManager.Instance.SetCurrentProductionSource(display);
         }
         else
         {
-            // Ne seçili ne hover varsa tamamen gizle
             UIManager.Instance.HideBuildingInfo();
             UIManager.Instance.ShowProductionPanel(false);
         }

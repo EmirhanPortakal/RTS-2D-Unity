@@ -13,6 +13,18 @@ public class UIManager : MonoBehaviour
 
     [Header("Production Panel")]
     [SerializeField] private GameObject productionPanel;
+    private Building currentProductionSource;
+
+    public void SetCurrentProductionSource(Building building)
+    {
+        currentProductionSource = building;
+    }
+
+    public Building GetCurrentProductionSource()
+    {
+        return currentProductionSource;
+    }
+
 
     private void Awake()
     {

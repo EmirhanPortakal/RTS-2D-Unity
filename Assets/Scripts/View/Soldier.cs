@@ -39,6 +39,10 @@ public class Soldier : MonoBehaviour
 
     private void Update()
     {
+        // Dönmesini engelle
+        transform.rotation = Quaternion.identity;
+        // Varsa scale sapmasını düzelt
+        transform.localScale = new Vector3(1f, 1f, 1f);
         // Eğer bir yol varsa düğümler boyunca hareket et
         if (path != null && pathIndex < path.Count)
         {

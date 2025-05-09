@@ -1,63 +1,71 @@
-using System;
+// Assets/Scripts/Controller/SoldierSpawner.cs
 using UnityEngine;
 
 public class SoldierSpawner : MonoBehaviour
 {
-    public static SoldierSpawner Instance { get; private set; }
+    public static SoldierSpawner Instance;
 
-    [Header("Üretilebilir Asker Tipleri")]
-    [Tooltip("ScriptableObject tipi SoldierTypeData asset’lerinizi atayın")]
+    [Header("Soldier Data Assets")]
+    [Tooltip("ScriptableObject array: her biri bir asker tipini tanımlar")]
     [SerializeField] private SoldierTypeData[] soldierTypes;
-
-    [Header("Spawn Noktası")]
-    [SerializeField] private Transform spawnPoint;
 
     private void Awake()
     {
-        Instance = this;
+        if (Instance == null)
+            Instance = this;
+        else
+            Destroy(gameObject);
     }
 
     /// <summary>
-    /// Data’yı doğrudan vererek asker üretir.
+    /// Varsayılan pozisyon olarak spawner objesinin pozisyonunu kullanır.
     /// </summary>
     public void SpawnSoldier(SoldierTypeData data)
     {
-        if (data == null || data.prefab == null)
-        {
-            Debug.LogError("SoldierSpawner: Geçersiz SoldierTypeData!");
-            return;
-        }
-
-        // Sahnedeki spawn noktasında yarat ve modele data’yı geç
-        var go = Instantiate(data.prefab, spawnPoint.position, Quaternion.identity);
-        var soldier = go.GetComponent<Soldier>();
-        soldier.Initialize(new SoldierModel(data)); 
+        SpawnSoldier(data, transform.position);
     }
 
     /// <summary>
-    /// Index ve pozisyon vererek üretim (eğer belirli bir noktaya spawnlamak isterseniz).
+    /// Belirtilen pozisyonda data.prefab ile asker spawnlar.
     /// </summary>
-    public void SpawnSoldier(int type, Vector3 position)
+    public void SpawnSoldier(SoldierTypeData data, Vector3 position)
     {
-        // Eğer UI’dan 1,2,3 geliyorsa 0-based dizimize uyarlamak için:
-        int index = type - 1;
-
-        if (index < 0 || index >= soldierTypes.Length)
+        if (data == null || data.prefab == null)
         {
-            Debug.LogError($"SoldierSpawner: Geçersiz index ({type})!");
+            Debug.LogError("SoldierSpawner: Geçersiz SoldierTypeData veya prefab!");
             return;
         }
 
-        var data = soldierTypes[index];
-        if (data.prefab == null)
+        GameObject soldierGO = Instantiate(data.prefab, position, Quaternion.identity);
+        var soldier = soldierGO.GetComponent<Soldier>();
+        if (soldier != null)
         {
-            Debug.LogError($"SoldierSpawner: {data.name} için prefab atanmamış!");
-            return;
+            // Model'i data üzerinden oluştur
+            soldier.Initialize(new SoldierModel(data));
         }
-
-        var go = Instantiate(data.prefab, position, Quaternion.identity);
-        var soldier = go.GetComponent<Soldier>();
-        soldier.Initialize(new SoldierModel(data));
     }
 
+    /// <summary>
+    /// Index'e göre SoldierTypeData döndürür.
+    /// </summary>
+    public SoldierTypeData GetSoldierType(int index)
+    {
+        if (index < 0 || index >= soldierTypes.Length)
+            return null;
+        return soldierTypes[index];
+    }
+
+    /// <summary>
+    /// Geri uyumluluk için int index ile spawn (pozisyon vererek)
+    /// </summary>
+    public void SpawnSoldier(int index, Vector3 position)
+    {
+        var data = GetSoldierType(index);
+        if (data == null)
+        {
+            Debug.LogError($"SoldierSpawner: Geçersiz soldier index: {index}");
+            return;
+        }
+        SpawnSoldier(data, position);
+    }
 }

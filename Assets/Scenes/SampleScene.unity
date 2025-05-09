@@ -156,7 +156,6 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 60db453532c36674fad1894b183b8b73, type: 2}
   - {fileID: 11400000, guid: cd0594aac3653d34191e52403bc9d802, type: 2}
   - {fileID: 11400000, guid: 40ec522bff5f3814e9b43ad31432a0a5, type: 2}
-  spawnPoint: {fileID: 0}
 --- !u!4 &28247639
 Transform:
   m_ObjectHideFlags: 0
@@ -608,10 +607,10 @@ MonoBehaviour:
   m_ChildAlignment: 0
   m_StartCorner: 0
   m_StartAxis: 0
-  m_CellSize: {x: 64, y: 64}
-  m_Spacing: {x: 10, y: 10}
-  m_Constraint: 0
-  m_ConstraintCount: 2
+  m_CellSize: {x: 128, y: 128}
+  m_Spacing: {x: 5, y: 5}
+  m_Constraint: 1
+  m_ConstraintCount: 3
 --- !u!1 &374542864
 GameObject:
   m_ObjectHideFlags: 0
@@ -1072,7 +1071,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -2395,7 +2394,6 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 40ec522bff5f3814e9b43ad31432a0a5, type: 2}
   content: {fileID: 349145791}
   soldierButtonPrefab: {fileID: 5752884368716381710, guid: 6968c6e17fb67dc449f90b029e54a7c3, type: 3}
-  spawner: {fileID: 28247638}
 --- !u!1 &1783070668
 GameObject:
   m_ObjectHideFlags: 0
@@ -2479,7 +2477,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 2142179087}
   m_HandleRect: {fileID: 2142179086}
   m_Direction: 2
-  m_Value: 0.99999976
+  m_Value: 1
   m_Size: 0.6100001
   m_NumberOfSteps: 0
   m_OnValueChanged:

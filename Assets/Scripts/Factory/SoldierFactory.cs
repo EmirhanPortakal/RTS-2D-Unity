@@ -2,17 +2,30 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public static class SoldierFactory
+public class SoldierFactory : MonoBehaviour
 {
-    public static SoldierModel CreateSoldier(int type)
+    [SerializeField] private Transform       spawnPoint;
+    [SerializeField] private SoldierTypeData[] soldierTypes;
+
+    /// <summary>
+    /// Tek bir SoldierTypeData asset’inden asker oluşturur ve geri döner.
+    /// </summary>
+    public Soldier CreateSoldier(SoldierTypeData data)
     {
-        return type switch
-        {
-            1 => new SoldierModel("Soldier 1", 10),
-            2 => new SoldierModel("Soldier 2", 5),
-            3 => new SoldierModel("Soldier 3", 2),
-            _ => null
-        };
+        if (data == null || data.prefab == null) return null;
+
+        GameObject go = Instantiate(data.prefab, spawnPoint.position, Quaternion.identity);
+        var soldier = go.GetComponent<Soldier>();
+        soldier.Initialize(new SoldierModel(data));   // veya 4-param ctor
+        return soldier;
+    }
+
+    // Eğer index ile çağrılan Produce metonuz varsa, onun içinde de CreateSoldier’ı kullanabilirsiniz:
+    public void Produce(int dataIndex)
+    {
+        if (dataIndex < 0 || dataIndex >= soldierTypes.Length) return;
+        CreateSoldier(soldierTypes[dataIndex]);
     }
 }
+
 

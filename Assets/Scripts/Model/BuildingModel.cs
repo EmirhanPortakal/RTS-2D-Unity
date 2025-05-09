@@ -1,20 +1,43 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-public enum BuildingType { Barracks, PowerPlant }
+// Eğer henüz yoksa, BuildingTypeData sınıfınızın bulunduğu namespace'i ekleyin:
+// using YourGame.Data;
+
+public enum BuildingType
+{
+    Barracks,
+    PowerPlant,
+    // İleride ekleyeceğiniz diğer tipler...
+}
 
 public class BuildingModel
 {
-    public string Name { get; private set; }
-    public int Health { get; private set; }
-    public BuildingType Type { get; private set; }
+    public string       Name   { get; }
+    public int          Health { get; }
+    public BuildingType Type   { get; }
+    public Sprite       Icon   { get; }
 
-    public BuildingModel(string name, int health, BuildingType type)
+    /// <summary>
+    /// Ana kurucu: tüm değerleri manuel olarak verirsiniz.
+    /// </summary>
+    public BuildingModel(string name, int health, BuildingType type, Sprite icon)
     {
-        Name = name;
+        Name   = name;
         Health = health;
-        Type = type;
+        Type   = type;
+        Icon   = icon;
+    }
+
+    /// <summary>
+    /// BuildingTypeData’dan otomatik oluşturacak kolay kurucu.
+    /// </summary>
+    public BuildingModel(BuildingTypeData data)
+        : this(
+            data.buildingName,
+            data.defaultHP,
+            data.buildingType,
+            data.buildingIcon
+          )
+    {
     }
 }
-

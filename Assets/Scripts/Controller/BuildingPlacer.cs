@@ -1,93 +1,102 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using RTS.Pathfinding;  // GridManager, Node
 
 public class BuildingPlacer : MonoBehaviour
 {
-    [SerializeField] private GameObject buildingPrefab;
-    private GameObject currentBuilding;
-    private bool isPlacing = false;
+    [Header("Grid Manager")]
+    [SerializeField] private GridManager gridManager;
 
-    private SpriteRenderer currentRenderer;
-    private Color validColor = new Color(0, 1, 0, 0.5f);     // Yeşil transparan
-    private Color invalidColor = new Color(1, 0, 0, 0.5f);   // Kırmızı transparan
+    private BuildingTypeData placingData;
+    private GameObject        currentBuilding;
+    private SpriteRenderer    currentRenderer;
+    private bool              isPlacing;
 
+    private Color validColor   = new Color(0, 1, 0, 0.5f);
+    private Color invalidColor = new Color(1, 0, 0, 0.5f);
 
-public void StartPlacingBuilding()
-{
-    if (buildingPrefab == null) return;
+    /// <summary>
+    /// UI butonundan çağırılır. Data’dan prefab’ı instantiate eder,
+    /// önizleme rengini ayarlar ve modelle initialize eder.
+    /// </summary>
+    public void StartPlacingBuilding(BuildingTypeData data)
+    {
+        placingData    = data;
+        currentBuilding = Instantiate(data.prefab);
+        currentRenderer = currentBuilding.GetComponent<SpriteRenderer>();
+        currentRenderer.color = validColor;
 
-    // 1. Prefab'ı instantiate et
-    currentBuilding = Instantiate(buildingPrefab);
+        // Model’i ata
+        var buildingComponent = currentBuilding.GetComponent<Building>();
+        buildingComponent.Initialize(new BuildingModel(placingData));
 
-    // 2. SpriteRenderer referansını al ve rengi ayarla
-    currentRenderer = currentBuilding.GetComponent<SpriteRenderer>();
-    currentRenderer.color = validColor;
+        isPlacing = true;
+        var buildingComp = currentBuilding.GetComponent<Building>();
+        buildingComp.SetData(data);
+        buildingComp.Initialize(new BuildingModel(data));
 
-    // 🔥 3. Building script'ine eriş ve model ile başlat
-    var building = currentBuilding.GetComponent<Building>();
-
-    string buildingName = building.defaultName;
-    int buildingHP = building.defaultHP;
-    BuildingType type = building.buildingType;
-
-    building.Initialize(new BuildingModel(buildingName, buildingHP, type));
-
-
-
-
-    // 4. Yerleştirme modu aktif
-    isPlacing = true;
-}
-
-
+    }
 
     private void Update()
     {
-    Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-    if (currentBuilding != null)
-    {
-    currentBuilding.transform.position = mousePos;
+        if (!isPlacing || currentBuilding == null) 
+            return;
 
+        // Fare pozisyonunu grid hücresine snap et
+        Vector3 worldMouse = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        worldMouse.z = 0f;
+        Node baseNode = gridManager.NodeFromWorldPoint(worldMouse);
+        if (baseNode == null) return;
 
+        currentBuilding.transform.position = baseNode.WorldPosition;
 
-    // Çarpışma kontrolü
-    Collider2D[] hits = Physics2D.OverlapBoxAll(
-        currentBuilding.transform.position,
-        currentBuilding.GetComponent<Collider2D>().bounds.size,
-        0f
-    );
+        // Footprint kontrolü
+        bool canPlace = true;
+        int  w        = placingData.size.x;
+        int  h        = placingData.size.y;
+        int  startX   = baseNode.GridX - w / 2;
+        int  startY   = baseNode.GridY - h / 2;
 
-    bool isBlocked = false;
-    foreach (var hit in hits)
-    {
-        if (hit.gameObject != currentBuilding)
+        for (int x = 0; x < w; x++)
         {
-            isBlocked = true;
-            break;
+            for (int y = 0; y < h; y++)
+            {
+                var n = gridManager.GetNode(startX + x, startY + y);
+                if (n == null || !n.IsWalkable)
+                {
+                    canPlace = false;
+                    break;
+                }
+            }
+            if (!canPlace) break;
         }
-    }
 
-    // Renk güncellemesi
-    currentRenderer.color = isBlocked ? invalidColor : validColor;
+        // Rengi güncelle
+        currentRenderer.color = canPlace ? validColor : invalidColor;
 
-    // Yerleştirme onayı
-    if (Input.GetMouseButtonDown(0) && !EventSystem.current.IsPointerOverGameObject())
-    {
-        if (!isBlocked)
+        // Yerleştir onayı: sol tık + UI dışında
+        if (canPlace
+            && Input.GetMouseButtonDown(0)
+            && !EventSystem.current.IsPointerOverGameObject())
         {
-            currentRenderer.color = Color.white; // Normal hale dön
-            currentBuilding = null;
-            isPlacing = false;
-        }
-        else
-        {
-            Debug.Log("Yerleştirilemez bölge.");
-        }
-    }
+            // 1) Seçilen hücreleri engelliye al
+            for (int x = 0; x < w; x++)
+                for (int y = 0; y < h; y++)
+                    gridManager.SetWalkable(startX + x, startY + y, false);
 
+            // 2) Binaya footprint bilgisini ve origin’i kaydet
+            var buildingComp = currentBuilding.GetComponent<Building>();
+            buildingComp.InitPlacement(
+                gridManager,
+                baseNode.GridX,
+                baseNode.GridY,
+                placingData.size
+            );
+
+            // 3) Önizlemeyi finalize et
+            currentRenderer.color = Color.white;
+            currentBuilding       = null;
+            isPlacing             = false;
+        }
     }
 }
-}
-

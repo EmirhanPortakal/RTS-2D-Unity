@@ -1,6 +1,8 @@
 // Assets/Scripts/Controller/BarracksProduction.cs
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class BarracksProduction : MonoBehaviour
 {
@@ -13,10 +15,13 @@ public class BarracksProduction : MonoBehaviour
     [Tooltip("Hangi asker tipi üretilecek (1,2 veya 3)")]
     [SerializeField] private int soldierType = 1;
 
-    [Tooltip("Barracks prefab’ı altına ekleyeceğim 'SpawnPoint' adlı child Transform")]
+    [Tooltip("Barracks prefab’ı altına ekleyeceğin 'SpawnPoint' adlı child Transform")]
     [SerializeField] private Transform spawnPoint;
 
     private Coroutine produceRoutine;
+
+    // 🔥 SoldierTypeData -> kalan cooldown süresi
+    private Dictionary<SoldierTypeData, float> cooldowns = new();
 
     private void Awake()
     {
@@ -32,7 +37,6 @@ public class BarracksProduction : MonoBehaviour
 
     private void OnEnable()
     {
-        // Eğer otomatik üretim yapmak istersen burayı aç
         // produceRoutine = StartCoroutine(ProductionLoop());
     }
 
@@ -51,14 +55,12 @@ public class BarracksProduction : MonoBehaviour
         }
     }
 
-    // Varsayılan asker üretimi (int soldierType)
     private void SpawnSoldier()
     {
         Vector3 pos = spawnPoint != null ? spawnPoint.position : transform.position;
         SoldierSpawner.Instance.SpawnSoldier(soldierType, pos);
     }
 
-    // SoldierTypeData ile spawn
     public void SpawnSoldier(SoldierTypeData data)
     {
         if (data == null) return;
@@ -66,22 +68,68 @@ public class BarracksProduction : MonoBehaviour
         SoldierSpawner.Instance.SpawnSoldier(data, pos);
     }
 
-
-    public void ProduceSoldierWithCooldown(SoldierTypeData data, UnityEngine.UI.Button button)
+    // ✅ Asker üretimi UI’dan çağrılır
+    public void ProduceSoldierWithCooldown(SoldierTypeData data, Button button)
     {
         if (!gameObject.activeInHierarchy || data == null) return;
 
+        if (IsOnCooldown(data)) return;
+
         Vector3 pos = spawnPoint != null ? spawnPoint.position : transform.position;
         SoldierSpawner.Instance.SpawnSoldier(data, pos);
+
+        cooldowns[data] = data.productionTime;
 
         if (button != null)
             StartCoroutine(ButtonCooldown(button, data.productionTime));
     }
 
-    private IEnumerator ButtonCooldown(UnityEngine.UI.Button btn, float duration)
+    // ✅ Button cooldown görseli
+    private IEnumerator ButtonCooldown(Button btn, float duration)
     {
         btn.interactable = false;
         yield return new WaitForSeconds(duration);
         btn.interactable = true;
+    }
+
+    // ✅ Bu asker türü üretim cooldown’unda mı?
+    public bool IsOnCooldown(SoldierTypeData data)
+    {
+        return cooldowns.ContainsKey(data);
+    }
+
+    public void ProduceSoldierWithCooldown(SoldierTypeData data)
+    {
+        if (data == null || GetCooldownRemaining(data) > 0f)
+            return;
+
+        Vector3 pos = spawnPoint != null ? spawnPoint.position : transform.position;
+        SoldierSpawner.Instance.SpawnSoldier(data, pos);
+        cooldowns[data] = Time.time + data.productionTime;
+    }
+
+    public float GetCooldownRemaining(SoldierTypeData data)
+    {
+        if (cooldowns.TryGetValue(data, out float readyAt))
+        {
+            float remaining = readyAt - Time.time;
+            return Mathf.Max(0f, remaining);
+        }
+
+        return 0f;
+    }
+
+
+    private void Update()
+    {
+        if (cooldowns.Count == 0) return;
+
+        var keys = new List<SoldierTypeData>(cooldowns.Keys);
+        foreach (var key in keys)
+        {
+            cooldowns[key] -= Time.deltaTime;
+            if (cooldowns[key] <= 0f)
+                cooldowns.Remove(key);
+        }
     }
 }

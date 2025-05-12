@@ -17,4 +17,4 @@ MonoBehaviour:
   prefab: {fileID: 8727569353419679176, guid: 81545ab711fd8a44698cbaea526e71c8, type: 3}
   health: 10
   damage: 10
-  productionTime: 7
+  productionTime: 55

@@ -37,30 +37,61 @@ public class SoldierProductionUI : MonoBehaviour
             go.transform.Find("DmgText").GetComponent<TMP_Text>().text = $"DMG: {t.damage}";
 
             var cdTxt = go.transform.Find("CooldownText").GetComponent<TMP_Text>();
-
             cdTxt.text = "";
 
-            // Button
             Button btn = go.GetComponent<Button>();
+
             btn.onClick.AddListener(() =>
             {
                 var currentBuilding = UIManager.Instance.GetCurrentProductionSource();
                 var bp = currentBuilding?.GetComponentInChildren<BarracksProduction>();
-                Debug.Log("UIManager.Instance: " + UIManager.Instance);
-                Debug.Log("CurrentBuilding: " + currentBuilding);
 
                 if (bp != null)
                 {
-                    bp.ProduceSoldierWithCooldown(t, btn); // soldier üret
-                    StartCoroutine(CooldownRoutine(t.productionTime, btn, cdTxt)); // yazılı cooldown
+                    float remaining = bp.GetCooldownRemaining(t);
+                    if (remaining > 0f)
+                    {
+                        Debug.Log("Cooldown devam ediyor");
+                    }
+                    else
+                    {
+                        bp.ProduceSoldierWithCooldown(t);
+                    }
+                }
+            });
+
+        }
+    }
+
+    private void Update()
+    {
+        var currentBuilding = UIManager.Instance.GetCurrentProductionSource();
+        var bp = currentBuilding?.GetComponentInChildren<BarracksProduction>();
+        if (bp == null) return;
+
+        for (int i = 0; i < content.childCount; i++)
+        {
+            var btn = content.GetChild(i).GetComponent<Button>();
+            var cdTxt = btn.transform.Find("CooldownText")?.GetComponent<TMP_Text>();
+            var data = types[i];
+
+            float remaining = bp.GetCooldownRemaining(data);
+            if (cdTxt != null)
+            {
+                if (remaining > 0)
+                {
+                    cdTxt.text = $"{Mathf.CeilToInt(remaining)}s";
+                    btn.interactable = false;
                 }
                 else
                 {
-                    Debug.LogWarning("Seçilen bina Barracks değil. Bina: " + currentBuilding?.name);
+                    cdTxt.text = "";
+                    btn.interactable = true;
                 }
-            });
+            }
         }
     }
+
 
     private IEnumerator CooldownRoutine(float duration, Button btn, TMP_Text cdTxt)
     {
@@ -69,13 +100,13 @@ public class SoldierProductionUI : MonoBehaviour
 
         while (timer > 0)
         {
-            cdTxt.text = $"{Mathf.CeilToInt(timer)}s";
-
-            timer -= Time.deltaTime;
+            cdTxt.text = $"{timer:F1}s";
+            timer -= Time.deltaTime * 0.75f; // cooldown daha yavaş aksın
             yield return null;
         }
 
         cdTxt.text = "";
         btn.interactable = true;
     }
+
 }
